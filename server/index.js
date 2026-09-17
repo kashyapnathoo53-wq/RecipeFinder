@@ -41,13 +41,25 @@ app.use((err, req, res, next) => {
   });
 });
 
+// Process error listeners to prevent unexpected exits
+process.on('uncaughtException', (err) => {
+  console.error('❌ Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
 // Connect to MongoDB with 127.0.0.1 fallback
 const mongoUri = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/RecipeDB";
 
 mongoose.connect(mongoUri)
 .then(() => {
   console.log("✅ MongoDB Connected Successfully");
-  app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+  const server = app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+  server.on('error', (err) => {
+    console.error('❌ Server listen error:', err);
+  });
 })
 .catch((err) => {
   console.error("MongoDB connection error:", err.message);
