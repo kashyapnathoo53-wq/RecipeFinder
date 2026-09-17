@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { toast } from '../utils/toast';
 
 function AdminDashboard() {
   const [stats, setStats] = useState(null);
@@ -15,7 +16,7 @@ function AdminDashboard() {
 
   useEffect(() => {
     if (!isAdmin()) {
-      alert('Access denied. Admin only.');
+      toast.error('Access denied. Admin only.');
       navigate('/');
       return;
     }
@@ -65,20 +66,20 @@ function AdminDashboard() {
         { adminNotes },
         getAuthConfig()
       );
-      alert('Recipe approved successfully!');
+      toast.success('Recipe approved successfully! ✅');
       setAdminNotes('');
       setSelectedRecipe(null);
       fetchStats();
       fetchSubmissions(filter);
     } catch (error) {
       console.error('Error approving recipe:', error);
-      alert('Failed to approve recipe');
+      toast.error('Failed to approve recipe');
     }
   };
 
   const handleReject = async (recipeId) => {
     if (!adminNotes.trim()) {
-      alert('Please provide a reason for rejection in the admin notes.');
+      toast.warning('Please provide a reason for rejection in the admin notes.');
       return;
     }
     
@@ -88,14 +89,14 @@ function AdminDashboard() {
         { adminNotes },
         getAuthConfig()
       );
-      alert('Recipe rejected.');
+      toast.info('Recipe rejected with admin notes.');
       setAdminNotes('');
       setSelectedRecipe(null);
       fetchStats();
       fetchSubmissions(filter);
     } catch (error) {
       console.error('Error rejecting recipe:', error);
-      alert('Failed to reject recipe');
+      toast.error('Failed to reject recipe');
     }
   };
 
@@ -106,12 +107,12 @@ function AdminDashboard() {
 
     try {
       await axios.delete(`http://localhost:5000/api/admin/recipes/${recipeId}`, getAuthConfig());
-      alert('Recipe deleted successfully!');
+      toast.success('Recipe deleted successfully!');
       fetchStats();
       fetchSubmissions(filter);
     } catch (error) {
       console.error('Error deleting recipe:', error);
-      alert('Failed to delete recipe');
+      toast.error('Failed to delete recipe');
     }
   };
 

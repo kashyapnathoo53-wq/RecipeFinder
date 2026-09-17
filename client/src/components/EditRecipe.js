@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
+import { toast } from '../utils/toast';
 
 function EditRecipe() {
   const { id } = useParams();
@@ -39,7 +40,7 @@ function EditRecipe() {
       const recipe = response.data.find(r => r._id === id);
       
       if (!recipe) {
-        alert('Recipe not found');
+        toast.error('Recipe not found');
         navigate('/my-recipes');
         return;
       }
@@ -59,7 +60,7 @@ function EditRecipe() {
       setLoading(false);
     } catch (error) {
       console.error('Error fetching recipe:', error);
-      alert('Failed to load recipe');
+      toast.error('Failed to load recipe');
       navigate('/my-recipes');
     }
   };
@@ -95,11 +96,11 @@ function EditRecipe() {
 
     try {
       await axios.put(`http://localhost:5000/api/recipes/${id}`, recipeData, getAuthConfig());
-      alert('Recipe updated successfully!');
+      toast.success('Recipe updated successfully!');
       navigate('/my-recipes');
     } catch (error) {
       console.error('Error updating recipe:', error);
-      alert(error.response?.data?.message || 'Failed to update recipe');
+      toast.error(error.response?.data?.message || 'Failed to update recipe');
     }
   };
 

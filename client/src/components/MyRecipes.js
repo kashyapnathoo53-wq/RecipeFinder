@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { toast } from '../utils/toast';
 
 function MyRecipes() {
   const [recipes, setRecipes] = useState([]);
@@ -35,7 +36,7 @@ function MyRecipes() {
       setLoading(false);
     } catch (error) {
       console.error('Error fetching recipes:', error);
-      alert('Failed to load your recipes');
+      toast.error('Failed to load your recipes');
       setLoading(false);
     }
   };
@@ -47,11 +48,11 @@ function MyRecipes() {
 
     try {
       await axios.delete(`http://localhost:5000/api/recipes/${recipeId}`, getAuthConfig());
-      alert('Recipe deleted successfully!');
+      toast.success(`"${recipeTitle}" deleted successfully!`);
       fetchMyRecipes(); // Refresh the list
     } catch (error) {
       console.error('Error deleting recipe:', error);
-      alert('Failed to delete recipe');
+      toast.error('Failed to delete recipe');
     }
   };
 

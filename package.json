@@ -1,0 +1,21 @@
+{
+  "name": "recipe-finder",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Recipe Finder and Recommender Full-Stack Application",
+  "scripts": {
+    "start": "node run-app.js",
+    "dev": "node run-app.js",
+    "server": "npm run start --prefix server",
+    "client": "npm run start --prefix client"
+  },
+  "keywords": [
+    "recipe",
+    "finder",
+    "react",
+    "express",
+    "mongodb"
+  ],
+  "author": "",
+  "license": "ISC"
+}

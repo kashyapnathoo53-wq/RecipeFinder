@@ -200,35 +200,37 @@ export const editMyRecipe = async (req, res) => {
   }
 };
 
-// @desc    Search recipes by ingredients
-// @route   GET /api/recipes/search?ingredients=chicken,tomato,onion
+// @desc    Search recipes by ingredients or title
+// @route   GET /api/recipes/search?ingredients=chicken,tomato or ?query=pasta
 export const searchRecipesByIngredients = async (req, res) => {
   try {
-    const { ingredients } = req.query;
+    const rawSearch = req.query.ingredients || req.query.query || req.query.q || '';
 
-    if (!ingredients) {
-      return res.status(400).json({ message: 'Please provide ingredients to search' });
+    if (!rawSearch.trim()) {
+      return res.status(400).json({ message: 'Please provide ingredients or keywords to search' });
     }
 
-    // Split ingredients by comma and trim whitespace
-    const searchIngredients = ingredients
-      .split(',')
-      .map(ing => ing.trim().toLowerCase())
-      .filter(ing => ing.length > 0);
+    // Split search terms by comma or whitespace if single term
+    const searchTerms = rawSearch
+      .split(/[,]+/)
+      .map(term => term.trim().toLowerCase())
+      .filter(term => term.length > 0);
 
-    if (searchIngredients.length === 0) {
-      return res.status(400).json({ message: 'Please provide valid ingredients' });
+    if (searchTerms.length === 0) {
+      return res.status(400).json({ message: 'Please provide valid search terms' });
     }
 
-    // Find approved recipes that contain ANY of the searched ingredients
+    const regexPattern = searchTerms.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+
+    // Find approved recipes that contain search terms in ingredients, title, category, or description
     const recipes = await Recipe.find({ 
       status: 'approved',
-      ingredients: { 
-        $elemMatch: { 
-          $regex: searchIngredients.join('|'), 
-          $options: 'i' 
-        } 
-      }
+      $or: [
+        { ingredients: { $elemMatch: { $regex: regexPattern, $options: 'i' } } },
+        { title: { $regex: regexPattern, $options: 'i' } },
+        { description: { $regex: regexPattern, $options: 'i' } },
+        { category: { $regex: regexPattern, $options: 'i' } }
+      ]
     })
     .populate('submittedBy', 'firstName lastName')
     .sort({ createdAt: -1 });
@@ -236,22 +238,31 @@ export const searchRecipesByIngredients = async (req, res) => {
     // Calculate match score for each recipe
     const recipesWithScore = recipes.map(recipe => {
       let matchCount = 0;
+      let titleBonus = 0;
+
+      // Check title match bonus
+      if (searchTerms.some(term => recipe.title.toLowerCase().includes(term))) {
+        titleBonus = 5;
+      }
       
       // Count how many of the recipe's ingredients match the search
       recipe.ingredients.forEach(recipeIng => {
-        const hasMatch = searchIngredients.some(searchIng => 
-          recipeIng.toLowerCase().includes(searchIng)
+        const hasMatch = searchTerms.some(term => 
+          recipeIng.toLowerCase().includes(term)
         );
         if (hasMatch) matchCount++;
       });
 
-      // Calculate percentage based on recipe's total ingredients
-      const matchPercentage = Math.round((matchCount / recipe.ingredients.length) * 100);
+      const totalScore = matchCount + titleBonus;
+      let matchPercentage = Math.round((matchCount / Math.max(recipe.ingredients.length, 1)) * 100);
+      if (titleBonus > 0 && matchPercentage < 60) {
+        matchPercentage = Math.max(matchPercentage, 80);
+      }
 
       return {
         ...recipe.toObject(),
-        matchScore: matchCount,
-        matchPercentage: matchPercentage,
+        matchScore: totalScore,
+        matchPercentage: Math.min(matchPercentage, 100),
         totalIngredients: recipe.ingredients.length
       };
     });
@@ -260,7 +271,7 @@ export const searchRecipesByIngredients = async (req, res) => {
     recipesWithScore.sort((a, b) => b.matchScore - a.matchScore);
 
     res.json({
-      searchedIngredients: searchIngredients,
+      searchedIngredients: searchTerms,
       totalResults: recipesWithScore.length,
       recipes: recipesWithScore
     });

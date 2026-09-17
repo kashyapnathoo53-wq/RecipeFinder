@@ -8,6 +8,7 @@ import AddRecipe from "./components/AddRecipe";
 import EditRecipe from "./components/EditRecipe";
 import MyRecipes from "./components/MyRecipes";
 import Profile from "./components/Profile";
+import Favorites from "./components/Favorites";
 import AdminDashboard from "./components/AdminDashboard";
 import UserManagement from "./components/UserManagement";
 import Navbar from "./components/Navbar";
@@ -23,6 +24,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/recipes" element={<RecipeList />} />
+          <Route path="/favorites" element={<Favorites />} />
           <Route path="/add" element={<AddRecipe />} />
           <Route path="/edit-recipe/:id" element={<EditRecipe />} />
           <Route path="/my-recipes" element={<MyRecipes />} />

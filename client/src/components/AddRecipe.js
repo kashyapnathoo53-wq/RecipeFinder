@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { toast } from '../utils/toast';
 
 function AddRecipe() {
   const [formData, setFormData] = useState({
@@ -30,7 +31,7 @@ function AddRecipe() {
     const token = localStorage.getItem('token');
 
     if (!token) {
-      alert('You must be logged in to create a recipe.');
+      toast.warning('You must be logged in to create a recipe.');
       navigate('/login');
       return;
     }
@@ -66,11 +67,11 @@ function AddRecipe() {
       );
 
       console.log('Recipe created successfully:', response.data);
-      alert('Recipe submitted for review! You can track its status in "My Recipes".');
+      toast.success('Recipe submitted for review! You can track its status in "My Recipes".');
       navigate('/my-recipes');
     } catch (error) {
       console.error('Error creating recipe:', error.response ? error.response.data : error.message);
-      alert(`Error: ${error.response ? error.response.data.message : 'Could not create recipe'}`);
+      toast.error(`Error: ${error.response ? error.response.data.message : 'Could not create recipe'}`);
     }
   };
 

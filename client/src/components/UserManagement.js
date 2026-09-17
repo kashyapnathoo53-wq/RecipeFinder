@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { toast } from '../utils/toast';
 
 function UserManagement() {
   const [users, setUsers] = useState([]);
@@ -26,6 +27,7 @@ function UserManagement() {
       setLoading(false);
     } catch (error) {
       console.error('Error fetching users:', error);
+      toast.error('Failed to load registered users');
       setLoading(false);
     }
   };
@@ -37,11 +39,11 @@ function UserManagement() {
 
     try {
       await axios.delete(`http://localhost:5000/api/admin/users/${userId}`, getAuthConfig());
-      alert('User deleted successfully!');
+      toast.success(`User "${userName}" deleted successfully!`);
       fetchUsers(); // Refresh the list
     } catch (error) {
       console.error('Error deleting user:', error);
-      alert(error.response?.data?.message || 'Failed to delete user');
+      toast.error(error.response?.data?.message || 'Failed to delete user');
     }
   };
 
