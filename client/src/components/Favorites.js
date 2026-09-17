@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { toast } from '../utils/toast';
+import { isRecipeNonVeg } from './RecipeList';
 
 function Favorites() {
   const [favorites, setFavorites] = useState([]);
